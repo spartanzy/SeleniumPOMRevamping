@@ -4,6 +4,7 @@ import java.time.Duration;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.openqa.selenium.support.events.WebDriverListener;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -19,13 +20,12 @@ public class BaseTest {
 	public static WebDriverWait wait;
 	WebDriverListener listener = new ProjectListener();			
 	public WebDriver driver;
-	
+	public ChromeOptions options;
 	
 	public BaseTest() {
-		// ChromeOptions options = new ChromeOptions();
-//	        options.addArguments("--headless=new"); // Modern headless mode in Chrome
-//	        options.addArguments("--window-size=1920,1080"); // Optional: Set screen size
-		webdriver = new ChromeDriver();
+		 
+		setBrowserOptions("chrome");
+		webdriver = new ChromeDriver(options);
 		driver = new EventFiringDecorator<WebDriver>(listener).decorate(webdriver);
 		wait = new WebDriverWait(driver, Duration.ofSeconds(waitTime));
 		driver.manage().window().maximize();
@@ -34,6 +34,19 @@ public class BaseTest {
 		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));	
 		
 		
+	}
+	
+	public void setBrowserOptions(String BrowserName) {
+		
+		if (BrowserName.equalsIgnoreCase("chrome")){
+			options = new ChromeOptions();
+	        options.addArguments("--headless=new"); // Modern headless mode in Chrome
+	        options.addArguments("--window-size=1920,1080"); // Optional: Set screen size
+	        options.addArguments("--disable-gpu");
+	        options.addArguments("--no-sandbox");
+	        
+	        
+		}
 	}
 	
 	@BeforeSuite
@@ -45,9 +58,9 @@ public class BaseTest {
 	@AfterTest
 	public void teardown() {
 		
-		driver.close();
-		if(driver!=null)
-		driver.quit();
+		if (driver != null) {
+            driver.quit();
+        }
 	}
 
 }

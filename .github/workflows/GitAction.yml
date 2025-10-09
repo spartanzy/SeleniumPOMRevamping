@@ -26,18 +26,15 @@ jobs:
           java-version: '11'
           cache: 'maven'
 
-      - name: Install Google Chrome
-        run: |
-          # download and install latest stable Chrome
-          wget -q -O /tmp/google-chrome-stable_current_amd64.deb \
-            https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo apt-get update
-          sudo apt-get install -y /tmp/google-chrome-stable_current_amd64.deb
-          google-chrome --version
+            
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
+        
+      - name: Verify Chrome version
+        run: google-chrome --version
 
       - name: Run Maven tests (TestNG)
-        run: |
-          mvn -B -DskipTests=false test      # -Dmaven.test.failure.ignore=true   #this step is to ignore failire and continue to build
+        run: mvn clean test -Dtestng.dtd.http=true -Dmaven.test.failure.ignore=true   #this step is to ignore failire and continue to build
         env:
           MAVEN_OPTS: -Xmx2g
         # If tests fail, the job will fail (default). We still upload artifacts in next steps using `if: always()`.
