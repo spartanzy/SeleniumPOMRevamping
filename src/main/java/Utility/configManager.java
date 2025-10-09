@@ -10,8 +10,8 @@ public class configManager {
     static {
         try {
             props.load(new FileInputStream(".\\src\\main\\java\\Utility\\config.properties"));
-        } catch (Exception e) {
-        	e.printStackTrace();
+        } catch (IOException ignored)  {
+        	
         }
     }
 
