@@ -3,7 +3,7 @@ name: CI - Selenium TestNG
 on:
   push:
     branches: [ main ]       # run on pushes to main (modify as needed)
-  pull_request:              # and on PRs
+  pull_request:              # and on PRs.
 
 jobs:
   build-and-test:
