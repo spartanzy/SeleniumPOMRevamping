@@ -1,0 +1,72 @@
+name: CI - Selenium TestNG
+
+on:
+  push:
+    branches: [ main ]       # run on pushes to main (modify as needed)
+  pull_request:              # and on PRs
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    # pass secrets into the job as environment variables (set them in repo Settings -> Secrets)
+    env:
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+
+      - name: Cache Maven local repository (optional extra)
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Install Google Chrome
+        run: |
+          # download and install latest stable Chrome
+          wget -q -O /tmp/google-chrome-stable_current_amd64.deb \
+            https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt-get update
+          sudo apt-get install -y /tmp/google-chrome-stable_current_amd64.deb
+          google-chrome --version
+
+      - name: Run Maven tests (TestNG)
+        run: |
+          mvn -B -DskipTests=false test      # -Dmaven.test.failure.ignore=true   #this step is to ignore failire and continue to build
+        env:
+          MAVEN_OPTS: -Xmx2g
+        # If tests fail, the job will fail (default). We still upload artifacts in next steps using `if: always()`.
+
+      - name: Upload Surefire / Failsafe reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sparkreports
+          path: Spark/Reports/*.html
+
+      - name: Upload Allure results (if you generate them)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: target/allure-results/**
+
+      - name: Show some helpful debug info (optional)
+        if: failure()
+        run: |
+          echo "List target dir:"
+          ls -la target || true
+          echo "Java version:"
+          java -version
