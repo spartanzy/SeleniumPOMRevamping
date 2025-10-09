@@ -1,6 +1,7 @@
 name: CI - Selenium TestNG
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]       # run on pushes to main (modify as needed)
   pull_request:              # and on PRs.
