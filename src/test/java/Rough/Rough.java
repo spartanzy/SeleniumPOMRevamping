@@ -6,8 +6,10 @@ public class Rough {
 	public static void main(String[] args) {
 
 
-		
-		System.out.println(configManager.getUsername());
+		char [][] test = {{'v','d'},{'g','g'}};
+		System.out.println(test[0].length);
+		System.out.println(test.length);
+		//System.out.println(configManager.getUsername());
 
 	}
 

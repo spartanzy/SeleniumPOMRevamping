@@ -1,0 +1,53 @@
+name: CI - Selenium TestNG via Docker (with Reports)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  selenium-tests:
+    runs-on: windows-latest  # ubuntu-latest
+
+    env:
+      TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+    steps:
+      # 1️⃣ Checkout your code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Use the official Selenium Chrome Docker container
+      - name: Run tests inside Selenium Docker container
+        uses: addnab/docker-run-action@v3
+        with:
+          image: selenium/standalone-chrome:latest
+          options: --shm-size="2g"
+          run: |
+            apt-get update && apt-get install -y maven git
+            git config --global --add safe.directory /github/workspace
+            cd /github/workspace
+            mvn clean test -Dsurefire.useFile=false
+       - name: Generate Allure HTML Report
+         if: always()
+         run: |
+           apt-get update && apt-get install -y npm
+           npm install -g allure-commandline --save-dev
+           allure generate --clean allure-results -o allure-report 
+
+      # 3️⃣ Upload Allure HTML report
+      - name: Upload Allure Results
+        if: always()  # runs even if tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report/
+
+      # 4️⃣ Upload Extent/HTML test-output folder (optional)
+      - name: Upload Extent/HTML Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output
+          path: test-output/

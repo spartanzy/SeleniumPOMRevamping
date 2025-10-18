@@ -44,7 +44,10 @@ public class BaseTest {
 	        options.addArguments("--window-size=1920,1080"); // Optional: Set screen size
 	        options.addArguments("--disable-gpu");
 	        options.addArguments("--no-sandbox");
-	        
+	        if (System.getenv("CI") != null) {
+	            options.addArguments("--headless=new");
+	            options.addArguments("--disable-dev-shm-usage");
+	        }
 	        
 		}
 	}
