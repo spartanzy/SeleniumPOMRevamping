@@ -1,7 +1,6 @@
-name: CI - Selenium TestNG via Docker (with Reports)
+name: CI - Selenium TestNG with Docker (Allure Report)
 
 on:
-  workflow_dispatch:
   push:
     branches: [ main ]
   pull_request:
@@ -15,40 +14,51 @@ jobs:
       TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
 
     steps:
-      # 1️⃣ Checkout your code
+      # 1️⃣ Checkout your repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Use the official Selenium Chrome Docker container
-      - name: Run tests inside Selenium Docker container
-        uses: addnab/docker-run-action@v3
-        with:
-          image: selenium/standalone-chrome:latest
-          options: --shm-size=2g
-          run: |
-            apt-get update && apt-get install -y maven git
-            git config --global --add safe.directory /github/workspace
-            cd /github/workspace
-            mvn clean test -Dsurefire.useFile=false
-      - name: Generate Allure HTML Report
-        if: always()
+      # 2️⃣ Start Selenium Standalone Chrome in the background
+      - name: Start Selenium Standalone Chrome
         run: |
-           apt-get update && apt-get install -y npm
-           npm install -g allure-commandline --save-dev
-           allure generate --clean allure-results -o allure-report 
+          docker run -d -p 4444:4444 --name selenium \
+            selenium/standalone-chrome:latest
+          sleep 10
+          docker ps -a
 
-      # 3️⃣ Upload Allure HTML report
-      - name: Upload Allure Results
-        if: always()  # runs even if tests fail
+      # 3️⃣ Run Maven tests inside a Maven container
+      - name: Run Maven tests in Docker
+        run: |
+          docker run --rm \
+            --network host \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            maven:3.9.6-eclipse-temurin-11 \
+            mvn clean test -Dsurefire.useFile=false
+        env:
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+
+      # 4️⃣ Generate Allure HTML report
+      - name: Generate Allure Report
+        run: |
+          sudo apt-get update && sudo apt-get install -y npm
+          sudo npm install -g allure-commandline --save-dev
+          allure generate --clean allure-results -o allure-report || true
+
+      # 5️⃣ Upload Allure HTML report as artifact
+      - name: Upload Allure Report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
           path: allure-report/
 
-      # 4️⃣ Upload Extent/HTML test-output folder (optional)
-      - name: Upload Extent/HTML Reports
+
+      # 7️⃣ Stop and clean up Selenium container
+      - name: Stop Selenium container
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-output
-          path: test-output/
+        run: docker rm -f selenium || true
+      - name: Stop Selenium container
+        if: always()
+        run: docker rm -f selenium || true
