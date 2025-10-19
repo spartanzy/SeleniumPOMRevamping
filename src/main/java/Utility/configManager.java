@@ -10,9 +10,8 @@ public class configManager {
     static {
         try {
             props.load(new FileInputStream(".\\src\\main\\java\\Utility\\config.properties"));
-        } catch (IOException ignored)  {
-        	
-        }
+        } catch (IOException ignored) {
+		}
     }
 
     public static String getUsername() {

@@ -30,9 +30,9 @@ jobs:
             git config --global --add safe.directory /github/workspace
             cd /github/workspace
             mvn clean test -Dsurefire.useFile=false
-       - name: Generate Allure HTML Report
-         if: always()
-         run: |
+      - name: Generate Allure HTML Report
+        if: always()
+        run: |
            apt-get update && apt-get install -y npm
            npm install -g allure-commandline --save-dev
            allure generate --clean allure-results -o allure-report 
