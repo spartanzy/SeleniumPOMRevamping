@@ -9,7 +9,7 @@ public class Rough {
 		char [][] test = {{'v','d'},{'g','g'}};
 		System.out.println(test[0].length);
 		System.out.println(test.length);
-		//System.out.println(configManager.getUsername());
+		System.out.println(configManager.getUsername());
 
 	}
 
