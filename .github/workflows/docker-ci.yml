@@ -8,7 +8,7 @@ on:
 
 jobs:
   selenium-tests:
-    runs-on: windows-latest  # ubuntu-latest
+    runs-on: ubuntu-latest
 
     env:
       TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
