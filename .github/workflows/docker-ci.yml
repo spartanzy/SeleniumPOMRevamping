@@ -1,6 +1,7 @@
 name: CI - Selenium TestNG via Docker (with Reports)
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
   pull_request:
