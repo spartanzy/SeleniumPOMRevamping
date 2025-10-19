@@ -24,7 +24,7 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: selenium/standalone-chrome:latest
-          options: --shm-size="2g"
+          options: --shm-size=2g
           run: |
             apt-get update && apt-get install -y maven git
             git config --global --add safe.directory /github/workspace
